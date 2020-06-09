@@ -97,12 +97,18 @@ class Factories:
         r = grid_layout.r(x)
 
         def pdf_of_r_over_psi(r):
-            return pdf_of_r(r)/ psi_coord.dx_dr(r)
+            return pdf_of_r(r)/ dp_dr(r)
 
         psi = discretised_analytical_solution(rh, pdf_of_r_over_psi)
+        # TODO is J important?
+        J = discretised_analytical_solution(rh, dp_dr)
 
-        dp_dt = drdt_of_r(rh) * dp_dr(rh)
-        G = dp_dr(r) / dx_dr(r)
+
+        # dp_dt = drdt_of_r(rh) * dp_dr(rh)
+        dp_dt = discretised_analytical_solution(grid_layout.r(np.linspace(xh[0] - dx/2, xh[-1]+dx/2, nr + 2)),
+                                                lambda x: drdt_of_r(x) * dp_dr(x))
+        # G = dp_dr(r) / dx_dr(r)   # TODO: which is better?
+        G = discretised_analytical_solution(rh, lambda x: dp_dr(x) / dx_dr(x))
 
         # C = dr_dt * dt / dr
         # GC = dp_dr / dx_dr * dr_dt * dt / dr =
@@ -130,36 +136,10 @@ class Factories:
             r,
             rh,
             dx,
-            dt
+            dt,
+            J
         )
 
 
 
-    @staticmethod
-    def shallow_water(nr, r_min, r_max, data, C, opts: Options):
-        grid = data.shape
-        halo = opts.n_halo
-        scalar_bcond = (PeriodicBoundaryCondition(), PeriodicBoundaryCondition())
-        vector_bcond = (ConstantBoundaryCondition(0), ConstantBoundaryCondition(0))
-
-        rh = np.linspace(r_min, r_max, nr+1)
-        Ch = C(rh)
-        stepper = Stepper(options=opts, n_dims=len(grid), non_unit_g_factor=False)
-        state = ScalarField(data=data, halo=halo, boundary_conditions=scalar_bcond)
-        GC_field=VectorField([Ch], halo=halo, boundary_conditions=vector_bcond)
-
-        solver = Solver(
-            stepper=stepper,
-            advectee=state,
-            advector=GC_field
-        )
-
-        # solver2 = Solver(
-        #     stepper =stepper,
-        #     advectee=state,
-        #     advector=GC_field,
-        #     rhs=rhs_field
-        # )
-
-        return solver
 

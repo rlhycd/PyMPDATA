@@ -18,7 +18,7 @@ class Simulation:
         self.__r_unit = self.setup.si.micrometre
         self.__n_unit = self.setup.si.centimetres ** -3 / self.setup.si.micrometre
 
-        self.solver, self.__r, self.__rh, self.dx, dt = Factories.condensational_growth(
+        self.solver, self.__r, self.__rh, self.dx, dt, J = Factories.condensational_growth(
             self.setup.nr,
             self.__mgn(self.setup.r_min, self.__r_unit),
             self.__mgn(self.setup.r_max, self.__r_unit),
@@ -32,6 +32,7 @@ class Simulation:
 
         self.out_steps = Simulation.find_out_steps(setup=self.setup, dt=dt)
         self.dt = dt * self.__t_unit
+        self.J = J
 
     def step(self, nt):
         self.solver.advance(nt)
@@ -47,7 +48,8 @@ class Simulation:
     @property
     def n(self):
         psi = self.solver.curr.get()
-        n = psi * self.psi_coord.dx_dr(self.__r)
+        # n = psi * self.psi_coord.dx_dr(self.__r) # TODO: look factories 103
+        n = psi * self.J  # TODO? J = int(Jdx)/int(dx) , still not correct but MAYBE bit better?
         return n * self.__n_unit
 
     @staticmethod

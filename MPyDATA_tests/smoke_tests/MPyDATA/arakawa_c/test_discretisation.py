@@ -48,11 +48,12 @@ def test_size_distribution(grid, coord, plot=True):
     print(totalpdf, integratedpdf)
     np.testing.assert_array_almost_equal(totalpdf,integratedpdf)
 
-    # relerr = ((sd.pdf(numpdfx) - numpdfy) / numpdfy).magnitude
-    # assert not (relerr > 0).all()
-    # assert not (relerr < 0).all()
-    # assert np.where(
-    #     numpdfy.magnitude < 5,
-    #     True,
-    #     np.abs(relerr) < 1e-2
-    # ).all()
+    # relerr = ((sd.pdf(numpdfx) * dx_dr(numpdfx) - numpdfy) / numpdfy).magnitude
+    relerr = ((integratedpdf - totalpdf) / totalpdf)
+    assert not (relerr > 0).all()
+    assert not (relerr < 0).all()
+    assert np.where(
+        numpdfy.magnitude < 5,
+        True,
+        np.abs(relerr) < 1e-2
+    ).all()
