@@ -23,13 +23,13 @@ class Setup:
     def H0(self, x):
         return np.where(abs(x) < 1, 1 - x**2, 0)
 
-    def analytic_H(self, x, t):
-        H = (1/self.lbd(t)) * (1 - (x / self.lbd(t)) ** 2)
-        return np.where(x**2 < self.lbd(t)**2, H, 0)
+    def analytic_H(self, x, t, xc=0):
+        H = (1/self.lbd(t)) * (1 - ((x-xc) / self.lbd(t)) ** 2)
+        return np.where((x-xc)**2 < self.lbd(t)**2, H, 0)
 
-    def analytic_u(self, x, t):
-        u = x * (self.lbd_t(t) / self.lbd(t))
-        return np.where(x**2 < self.lbd(t)**2, u, 0)
+    def analytic_u(self, x, t, xc=0):
+        u = (x-xc) * (self.lbd_t(t) / self.lbd(t))
+        return np.where((x-xc)**2 < self.lbd(t)**2, u, 0)
 
     def C(self, x):
         return 2* self.analytic_u(x, self.nt*self.dt) * self.dt/self.dx # TODO!!!!
